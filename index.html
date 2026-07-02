@@ -1,130 +1,62 @@
 <!doctype html>
-<html lang="ja">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>大阪歴史スポット全体マップ</title>
+<title>Osaka Historical Spots Map</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <style>
-  body {
-    margin:0;
-    font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Yu Gothic", sans-serif;
-    background:#f6f3ee;
-    color:#1e1e1e;
-  }
-  header {
-    padding:14px 16px 10px;
-    background:#fff;
-    border-bottom:1px solid #ddd;
-  }
-  h1 {
-    font-size:18px;
-    margin:0 0 6px;
-  }
-  .sub {
-    font-size:13px;
-    color:#555;
-    line-height:1.5;
-  }
-  #map {
-    height:72vh;
-    width:100%;
-  }
-  .legend {
-    display:flex;
-    gap:8px;
-    flex-wrap:wrap;
-    padding:10px 14px;
-    background:#fff;
-    border-top:1px solid #ddd;
-    font-size:13px;
-  }
-  .chip {
-    padding:6px 10px;
-    border-radius:999px;
-    background:#eee;
-  }
-  .sun { background:#fff0b3; }
-  .rain { background:#dbeafe; }
-  .both { background:#e9d5ff; }
-  .list {
-    padding:14px 16px 24px;
-  }
-  .card {
-    background:#fff;
-    border:1px solid #ddd;
-    border-radius:14px;
-    padding:12px;
-    margin-bottom:10px;
-  }
-  .card b {
-    font-size:15px;
-  }
-  .meta {
-    font-size:13px;
-    color:#555;
-    margin-top:6px;
-    line-height:1.5;
-  }
-  a {
-    color:#0b57d0;
-  }
+:root{--bg:#0f1117;--sun:#f59e0b;--rain:#3b82f6;--both:#8b5cf6}
+*{box-sizing:border-box}body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Inter","Segoe UI",sans-serif;color:white;background:radial-gradient(circle at top left,rgba(245,158,11,.25),transparent 30%),radial-gradient(circle at top right,rgba(59,130,246,.25),transparent 30%),linear-gradient(135deg,#0f1117,#151827 55%,#08101f)}
+.hero{padding:24px 18px 16px;border-bottom:1px solid rgba(255,255,255,.16)}.eyebrow{letter-spacing:.16em;text-transform:uppercase;color:rgba(255,255,255,.62);font-size:11px;margin-bottom:8px}h1{margin:0;font-size:clamp(25px,6vw,42px);line-height:1.05;font-weight:850}.lead{margin:10px 0 16px;max-width:780px;color:rgba(255,255,255,.78);line-height:1.55;font-size:14px}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap}button{border:1px solid rgba(255,255,255,.28);color:white;background:rgba(255,255,255,.09);padding:10px 13px;border-radius:999px;font-weight:750;font-size:13px;cursor:pointer;backdrop-filter:blur(12px)}button.active{background:white;color:#111827;border-color:white}
+.layout{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(320px,.75fr);gap:14px;padding:14px}#map{min-height:68vh;height:calc(100vh - 195px);border-radius:24px;overflow:hidden;border:1px solid rgba(255,255,255,.18);box-shadow:0 24px 70px rgba(0,0,0,.35)}
+.side{display:flex;flex-direction:column;gap:12px;max-height:calc(100vh - 195px);overflow:auto;padding-right:2px}.recommend{background:linear-gradient(135deg,rgba(255,255,255,.18),rgba(255,255,255,.08));border:1px solid rgba(255,255,255,.18);border-radius:24px;padding:16px;backdrop-filter:blur(20px)}.recommend h2{margin:0 0 8px;font-size:16px}.recommend p{margin:0;color:rgba(255,255,255,.76);font-size:13px;line-height:1.55}.route{margin-top:10px;display:grid;gap:8px}.route div{background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.13);border-radius:14px;padding:9px 10px;font-size:13px;line-height:1.45}
+.cards{display:grid;gap:10px}.card{background:rgba(255,255,255,.93);color:#111827;border-radius:20px;padding:14px;box-shadow:0 12px 32px rgba(0,0,0,.18);border:1px solid rgba(255,255,255,.2)}.topline{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}.card h3{margin:0;font-size:16px}.tag{flex:0 0 auto;font-size:11px;font-weight:850;padding:5px 8px;border-radius:999px;color:white}.tag.sunny{background:var(--sun)}.tag.rainy{background:var(--rain)}.tag.both{background:var(--both)}
+.desc{margin:8px 0 10px;color:#374151;line-height:1.5;font-size:13px}.mini{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}.mini div{background:#f3f4f6;padding:8px;border-radius:12px;font-size:12px;color:#374151}.mini b{display:block;color:#111827;margin-bottom:2px;font-size:11px;text-transform:uppercase;letter-spacing:.04em}.enjoy{font-size:12.5px;line-height:1.5;color:#4b5563;border-left:3px solid #d1d5db;padding-left:9px;margin-bottom:10px}.card a{display:inline-flex;text-decoration:none;color:#111827;background:#e5e7eb;padding:8px 10px;border-radius:999px;font-weight:850;font-size:12px}
+.leaflet-popup-content-wrapper{border-radius:18px}.popup-title{font-weight:850;font-size:15px}.popup-meta{color:#4b5563;line-height:1.5;margin-top:6px}.popup-link{display:inline-block;margin-top:8px;color:#0b57d0;font-weight:750}
+@media(max-width:860px){.layout{grid-template-columns:1fr;padding:10px}#map{height:58vh;min-height:440px;border-radius:20px}.side{max-height:none;overflow:visible}.hero{padding:18px 14px 12px}}
 </style>
 </head>
 <body>
-<header>
-  <h1>大阪歴史スポット全体マップ</h1>
-  <div class="sub">晴れ向け・雨向けの候補を全部ピンで表示。ピンを押すと、雰囲気・所要時間・料金目安が見れます。</div>
-</header>
-<div id="map"></div>
-<div class="legend">
-  <span class="chip sun">晴れ向け</span>
-  <span class="chip rain">雨向け</span>
-  <span class="chip both">晴れ・雨どちらも</span>
-</div>
-<div class="list" id="spotList"></div>
+<section class="hero">
+  <div class="eyebrow">Osaka Historical Travel Map</div>
+  <h1>Explore Osaka’s History<br>by Weather & Mood</h1>
+  <p class="lead">A curated map of historical spots in Osaka. Switch between sunny-day walks and rainy-day indoor plans, then tap each pin to see atmosphere, time, budget, and how to enjoy it.</p>
+  <div class="toolbar">
+    <button class="active" data-filter="all">All Spots</button>
+    <button data-filter="sunny">Sunny Plan</button>
+    <button data-filter="rainy">Rainy Plan</button>
+  </div>
+</section>
+<main class="layout">
+  <div id="map"></div>
+  <aside class="side">
+    <section class="recommend">
+      <h2 id="recTitle">Recommended way to enjoy</h2>
+      <p id="recText"></p>
+      <div class="route" id="routeBox"></div>
+    </section>
+    <section class="cards" id="cards"></section>
+  </aside>
+</main>
 <script>
-const spots = [{"name": "大阪城天守閣", "lat": 34.6877892, "lng": 135.5272487, "type": "晴れ・雨", "note": "戦国・豊臣・大坂の陣。王道の歴史スポット。", "time": "1.5〜3時間", "fee": "大人1,200円／高大生600円目安"}, {"name": "四天王寺", "lat": 34.653351, "lng": 135.514302, "type": "晴れ", "note": "聖徳太子ゆかり。古代仏教の空気。", "time": "1.5〜2時間", "fee": "境内無料＋拝観エリア別途"}, {"name": "住吉大社", "lat": 34.613379, "lng": 135.493023, "type": "晴れ", "note": "住吉造・太鼓橋。大阪の古い神社文化。", "time": "1〜1.5時間", "fee": "参拝無料／御朱印・御守は別途"}, {"name": "難波宮跡公園", "lat": 34.680183, "lng": 135.52367, "type": "晴れ", "note": "古代の都跡。静かな歴史散歩向け。", "time": "1〜1.5時間", "fee": "無料"}, {"name": "大仙公園", "lat": 34.558619, "lng": 135.482649, "type": "晴れ", "note": "百舌鳥古墳群エリアの公園。古墳散策の拠点。", "time": "1〜2時間", "fee": "公園散策無料"}, {"name": "仁徳天皇陵古墳", "lat": 34.5639306, "lng": 135.4873083, "type": "晴れ", "note": "世界遺産・百舌鳥古墳群の中心的スポット。", "time": "30分〜1時間", "fee": "外周見学無料"}, {"name": "大阪歴史博物館", "lat": 34.682677, "lng": 135.520812, "type": "雨", "note": "古代から近代まで大阪の流れを屋内で学べる。", "time": "1.5〜2.5時間", "fee": "大人600円／高大生400円目安"}, {"name": "大阪くらしの今昔館", "lat": 34.710403, "lng": 135.511609, "type": "雨", "note": "江戸〜昭和の大阪の暮らしを体験。", "time": "1〜2時間", "fee": "一般600円／高大生300円目安"}, {"name": "適塾", "lat": 34.69126, "lng": 135.503253, "type": "雨", "note": "緒方洪庵の蘭学塾。近代医学・教育史。", "time": "30分〜1時間", "fee": "一般400円／高大生200円目安"}, {"name": "堺市博物館", "lat": 34.558023, "lng": 135.487929, "type": "雨", "note": "古墳・堺の商人文化・茶の湯・鉄砲。", "time": "1〜1.5時間", "fee": "一般200円／高大生100円目安"}];
-const map = L.map('map');
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-  maxZoom: 19,
-  attribution: '&copy; OpenStreetMap contributors'
-}).addTo(map);
-
-const bounds = [];
-function markerColor(type) {
-  if (type.includes('晴れ・雨')) return '#8b5cf6';
-  if (type.includes('雨')) return '#2563eb';
-  return '#d97706';
-}
-function iconFor(type) {
-  const color = markerColor(type);
-  return L.divIcon({
-    className: '',
-    html: `<div style="width:22px;height:22px;border-radius:50%;background:${color};border:3px solid white;box-shadow:0 2px 8px rgba(0,0,0,.35);"></div>`,
-    iconSize: [22,22],
-    iconAnchor: [11,11]
-  });
-}
-
-spots.forEach((s) => {
-  bounds.push([s.lat, s.lng]);
-  const google = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(s.name)}`;
-  L.marker([s.lat, s.lng], {icon: iconFor(s.type)})
-    .addTo(map)
-    .bindPopup(`<b>${s.name}</b><br>${s.type}<br>${s.note}<br><br>所要時間：${s.time}<br>目安料金：${s.fee}<br><br><a href="${google}" target="_blank">Googleマップで開く</a>`);
-});
-map.fitBounds(bounds, {padding:[32,32]});
-
-const list = document.getElementById('spotList');
-spots.forEach((s) => {
-  const google = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(s.name)}`;
-  const div = document.createElement('div');
-  div.className = 'card';
-  div.innerHTML = `<b>${s.name}</b><div class="meta">${s.type}｜${s.note}<br>所要時間：${s.time}｜目安料金：${s.fee}<br><a href="${google}" target="_blank">Googleマップで開く</a></div>`;
-  list.appendChild(div);
-});
+const spots = [{"name": "Osaka Castle Tower", "lat": 34.6877892, "lng": 135.5272487, "cat": ["sunny", "rainy"], "label": "Sunny / Rainy", "vibe": "A grand symbol of Osaka’s samurai history, connected to Toyotomi Hideyoshi and the Siege of Osaka.", "time": "1.5–3 hours", "budget": "Approx. ¥600–¥1,200", "best": "Start here if it is your first time exploring Osaka history. Visit the museum inside, then walk around the moat and stone walls.", "google": "大阪城天守閣"}, {"name": "Shitennoji Temple", "lat": 34.653351, "lng": 135.514302, "cat": ["sunny"], "label": "Sunny", "vibe": "One of Japan’s oldest Buddhist temples, linked to Prince Shotoku and early Japanese Buddhism.", "time": "1.5–2 hours", "budget": "Free area + paid garden / inner precincts", "best": "Go slowly. This spot is best enjoyed as a quiet cultural walk rather than a quick photo stop.", "google": "四天王寺"}, {"name": "Sumiyoshi Taisha Shrine", "lat": 34.613379, "lng": 135.493023, "cat": ["sunny"], "label": "Sunny", "vibe": "A historic shrine with an elegant arched bridge and traditional Sumiyoshi-zukuri architecture.", "time": "1–1.5 hours", "budget": "Free entry; charms / goshuin optional", "best": "Visit in the morning for a calm atmosphere. The red bridge is the symbolic photo point.", "google": "住吉大社"}, {"name": "Naniwa Palace Site Park", "lat": 34.680183, "lng": 135.52367, "cat": ["sunny"], "label": "Sunny", "vibe": "The remains of an ancient imperial palace, offering a quiet view into Osaka before the castle era.", "time": "1–1.5 hours", "budget": "Free", "best": "Pair it with the Osaka Museum of History nearby. The story becomes much easier to understand.", "google": "難波宮跡公園"}, {"name": "Daisen Park", "lat": 34.558619, "lng": 135.482649, "cat": ["sunny"], "label": "Sunny", "vibe": "A peaceful park in the Mozu Kofun area, ideal for ancient tomb history and slow walking.", "time": "1–2 hours", "budget": "Free", "best": "Use this as a relaxing base when visiting the nearby kofun and Sakai City Museum.", "google": "大仙公園"}, {"name": "Emperor Nintoku’s Mausoleum Kofun", "lat": 34.5639306, "lng": 135.4873083, "cat": ["sunny"], "label": "Sunny", "vibe": "A massive keyhole-shaped ancient tomb, part of the Mozu-Furuichi Kofun Group World Heritage Site.", "time": "30 min–1 hour", "budget": "Free exterior viewing", "best": "Do not expect to enter the tomb. Enjoy it as a scale-based historical landscape.", "google": "仁徳天皇陵古墳"}, {"name": "Osaka Museum of History", "lat": 34.682677, "lng": 135.520812, "cat": ["rainy"], "label": "Rainy", "vibe": "A well-structured museum covering Osaka from ancient Naniwa to the modern city.", "time": "1.5–2.5 hours", "budget": "Approx. ¥400–¥600", "best": "Begin on the upper floors and move downward. The view toward Osaka Castle helps connect the timeline.", "google": "大阪歴史博物館"}, {"name": "Osaka Museum of Housing and Living", "lat": 34.710403, "lng": 135.511609, "cat": ["rainy"], "label": "Rainy", "vibe": "A recreated Edo-period Osaka townscape where you can feel daily life, not just read about it.", "time": "1–2 hours", "budget": "Approx. ¥300–¥600", "best": "Great for photos and casual visitors. It is more immersive than textbook-style history.", "google": "大阪くらしの今昔館"}, {"name": "Tekijuku", "lat": 34.69126, "lng": 135.503253, "cat": ["rainy"], "label": "Rainy", "vibe": "A former Dutch studies academy founded by Ogata Koan, linked to medicine, education, and modernization.", "time": "30 min–1 hour", "budget": "Approx. ¥200–¥400", "best": "Best for people who like intellectual history. Combine it with a cafe walk around Kitahama.", "google": "適塾"}, {"name": "Sakai City Museum", "lat": 34.558023, "lng": 135.487929, "cat": ["rainy"], "label": "Rainy", "vibe": "A compact but rich museum covering ancient tombs, Sakai merchants, tea culture, and firearms.", "time": "1–1.5 hours", "budget": "Approx. ¥100–¥200", "best": "Visit before or after the kofun area. It gives context that the outdoor sites cannot explain alone.", "google": "堺市博物館"}];
+let currentFilter = "all";
+let markers = [];
+const map = L.map('map', {scrollWheelZoom:true});
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {maxZoom:19, attribution:'&copy; OpenStreetMap contributors'}).addTo(map);
+function colorFor(s){if(s.cat.includes("sunny")&&s.cat.includes("rainy"))return "#8b5cf6"; if(s.cat.includes("rainy"))return "#3b82f6"; return "#f59e0b";}
+function tagClass(s){if(s.cat.includes("sunny")&&s.cat.includes("rainy"))return "both"; if(s.cat.includes("rainy"))return "rainy"; return "sunny";}
+function iconFor(s){const color=colorFor(s);return L.divIcon({className:'',html:`<div style="width:24px;height:24px;border-radius:50%;background:${color};border:3px solid white;box-shadow:0 4px 16px rgba(0,0,0,.45);"></div>`,iconSize:[24,24],iconAnchor:[12,12]});}
+function visibleSpots(){return currentFilter==="all"?spots:spots.filter(s=>s.cat.includes(currentFilter));}
+function renderMap(){markers.forEach(m=>map.removeLayer(m));markers=[];const bounds=[];visibleSpots().forEach(s=>{bounds.push([s.lat,s.lng]);const google=`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(s.google)}`;const marker=L.marker([s.lat,s.lng],{icon:iconFor(s)}).addTo(map).bindPopup(`<div class="popup-title">${s.name}</div><div class="popup-meta"><b>${s.label}</b><br>${s.vibe}<br><br>Time: ${s.time}<br>Budget: ${s.budget}<br><span style="display:block;margin-top:6px;"><b>Best way:</b> ${s.best}</span></div><a class="popup-link" href="${google}" target="_blank">Open in Google Maps</a>`);markers.push(marker);});if(bounds.length)map.fitBounds(bounds,{padding:[36,36]});}
+function renderCards(){const cards=document.getElementById("cards");cards.innerHTML="";visibleSpots().forEach(s=>{const google=`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(s.google)}`;const card=document.createElement("article");card.className="card";card.innerHTML=`<div class="topline"><h3>${s.name}</h3><span class="tag ${tagClass(s)}">${s.label}</span></div><p class="desc">${s.vibe}</p><div class="mini"><div><b>Time</b>${s.time}</div><div><b>Budget</b>${s.budget}</div></div><div class="enjoy"><b>How to enjoy:</b> ${s.best}</div><a href="${google}" target="_blank">Open in Google Maps</a>`;cards.appendChild(card);});}
+function renderRecommendation(){const title=document.getElementById("recTitle"),text=document.getElementById("recText"),routeBox=document.getElementById("routeBox");routeBox.innerHTML="";let routes=[];if(currentFilter==="sunny"){title.textContent="Sunny-day route idea";text.textContent="Focus on outdoor atmosphere: castle walls, ancient temple grounds, shrines, and kofun landscapes. Choose either the central route or the southern route instead of forcing all spots into one day.";routes=["Central history walk: Osaka Museum of History area → Naniwa Palace Site Park → Osaka Castle Tower","Ancient temple route: Shitennoji Temple → Sumiyoshi Taisha Shrine","Southern ancient-history route: Emperor Nintoku’s Mausoleum Kofun → Daisen Park → Sakai City Museum"];}else if(currentFilter==="rainy"){title.textContent="Rainy-day route idea";text.textContent="Stay mostly indoors and use museums to understand Osaka’s timeline. This plan is better for deep learning, light walking, and relaxed pacing.";routes=["Classic indoor route: Osaka Museum of History → Osaka Castle Tower","Lifestyle-history route: Osaka Museum of Housing and Living → Tekijuku","Sakai indoor route: Sakai City Museum → nearby cafe or Daisen Park if the rain stops"];}else{title.textContent="Recommended way to enjoy";text.textContent="Use the full map first to understand the distance. Osaka Castle and Naniwa Palace are close together, while Sakai and Sumiyoshi are better as a southern-history route.";routes=["First-timer route: Osaka Museum of History → Osaka Castle Tower → Shitennoji Temple","Deep-history route: Naniwa Palace Site Park → Shitennoji Temple → Sumiyoshi Taisha Shrine","Ancient Osaka route: Emperor Nintoku’s Mausoleum Kofun → Daisen Park → Sakai City Museum"];}routes.forEach(t=>{const div=document.createElement("div");div.textContent=t;routeBox.appendChild(div);});}
+function renderAll(){renderMap();renderCards();renderRecommendation();}
+document.querySelectorAll("button[data-filter]").forEach(btn=>{btn.addEventListener("click",()=>{document.querySelectorAll("button[data-filter]").forEach(b=>b.classList.remove("active"));btn.classList.add("active");currentFilter=btn.dataset.filter;renderAll();});});
+renderAll();
 </script>
 </body>
 </html>
