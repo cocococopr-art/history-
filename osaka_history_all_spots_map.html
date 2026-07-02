@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>大阪歴史スポット全体マップ</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+  body {
+    margin:0;
+    font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Yu Gothic", sans-serif;
+    background:#f6f3ee;
+    color:#1e1e1e;
+  }
+  header {
+    padding:14px 16px 10px;
+    background:#fff;
+    border-bottom:1px solid #ddd;
+  }
+  h1 {
+    font-size:18px;
+    margin:0 0 6px;
+  }
+  .sub {
+    font-size:13px;
+    color:#555;
+    line-height:1.5;
+  }
+  #map {
+    height:72vh;
+    width:100%;
+  }
+  .legend {
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+    padding:10px 14px;
+    background:#fff;
+    border-top:1px solid #ddd;
+    font-size:13px;
+  }
+  .chip {
+    padding:6px 10px;
+    border-radius:999px;
+    background:#eee;
+  }
+  .sun { background:#fff0b3; }
+  .rain { background:#dbeafe; }
+  .both { background:#e9d5ff; }
+  .list {
+    padding:14px 16px 24px;
+  }
+  .card {
+    background:#fff;
+    border:1px solid #ddd;
+    border-radius:14px;
+    padding:12px;
+    margin-bottom:10px;
+  }
+  .card b {
+    font-size:15px;
+  }
+  .meta {
+    font-size:13px;
+    color:#555;
+    margin-top:6px;
+    line-height:1.5;
+  }
+  a {
+    color:#0b57d0;
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>大阪歴史スポット全体マップ</h1>
+  <div class="sub">晴れ向け・雨向けの候補を全部ピンで表示。ピンを押すと、雰囲気・所要時間・料金目安が見れます。</div>
+</header>
+<div id="map"></div>
+<div class="legend">
+  <span class="chip sun">晴れ向け</span>
+  <span class="chip rain">雨向け</span>
+  <span class="chip both">晴れ・雨どちらも</span>
+</div>
+<div class="list" id="spotList"></div>
+<script>
+const spots = [{"name": "大阪城天守閣", "lat": 34.6877892, "lng": 135.5272487, "type": "晴れ・雨", "note": "戦国・豊臣・大坂の陣。王道の歴史スポット。", "time": "1.5〜3時間", "fee": "大人1,200円／高大生600円目安"}, {"name": "四天王寺", "lat": 34.653351, "lng": 135.514302, "type": "晴れ", "note": "聖徳太子ゆかり。古代仏教の空気。", "time": "1.5〜2時間", "fee": "境内無料＋拝観エリア別途"}, {"name": "住吉大社", "lat": 34.613379, "lng": 135.493023, "type": "晴れ", "note": "住吉造・太鼓橋。大阪の古い神社文化。", "time": "1〜1.5時間", "fee": "参拝無料／御朱印・御守は別途"}, {"name": "難波宮跡公園", "lat": 34.680183, "lng": 135.52367, "type": "晴れ", "note": "古代の都跡。静かな歴史散歩向け。", "time": "1〜1.5時間", "fee": "無料"}, {"name": "大仙公園", "lat": 34.558619, "lng": 135.482649, "type": "晴れ", "note": "百舌鳥古墳群エリアの公園。古墳散策の拠点。", "time": "1〜2時間", "fee": "公園散策無料"}, {"name": "仁徳天皇陵古墳", "lat": 34.5639306, "lng": 135.4873083, "type": "晴れ", "note": "世界遺産・百舌鳥古墳群の中心的スポット。", "time": "30分〜1時間", "fee": "外周見学無料"}, {"name": "大阪歴史博物館", "lat": 34.682677, "lng": 135.520812, "type": "雨", "note": "古代から近代まで大阪の流れを屋内で学べる。", "time": "1.5〜2.5時間", "fee": "大人600円／高大生400円目安"}, {"name": "大阪くらしの今昔館", "lat": 34.710403, "lng": 135.511609, "type": "雨", "note": "江戸〜昭和の大阪の暮らしを体験。", "time": "1〜2時間", "fee": "一般600円／高大生300円目安"}, {"name": "適塾", "lat": 34.69126, "lng": 135.503253, "type": "雨", "note": "緒方洪庵の蘭学塾。近代医学・教育史。", "time": "30分〜1時間", "fee": "一般400円／高大生200円目安"}, {"name": "堺市博物館", "lat": 34.558023, "lng": 135.487929, "type": "雨", "note": "古墳・堺の商人文化・茶の湯・鉄砲。", "time": "1〜1.5時間", "fee": "一般200円／高大生100円目安"}];
+const map = L.map('map');
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  maxZoom: 19,
+  attribution: '&copy; OpenStreetMap contributors'
+}).addTo(map);
+
+const bounds = [];
+function markerColor(type) {
+  if (type.includes('晴れ・雨')) return '#8b5cf6';
+  if (type.includes('雨')) return '#2563eb';
+  return '#d97706';
+}
+function iconFor(type) {
+  const color = markerColor(type);
+  return L.divIcon({
+    className: '',
+    html: `<div style="width:22px;height:22px;border-radius:50%;background:${color};border:3px solid white;box-shadow:0 2px 8px rgba(0,0,0,.35);"></div>`,
+    iconSize: [22,22],
+    iconAnchor: [11,11]
+  });
+}
+
+spots.forEach((s) => {
+  bounds.push([s.lat, s.lng]);
+  const google = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(s.name)}`;
+  L.marker([s.lat, s.lng], {icon: iconFor(s.type)})
+    .addTo(map)
+    .bindPopup(`<b>${s.name}</b><br>${s.type}<br>${s.note}<br><br>所要時間：${s.time}<br>目安料金：${s.fee}<br><br><a href="${google}" target="_blank">Googleマップで開く</a>`);
+});
+map.fitBounds(bounds, {padding:[32,32]});
+
+const list = document.getElementById('spotList');
+spots.forEach((s) => {
+  const google = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(s.name)}`;
+  const div = document.createElement('div');
+  div.className = 'card';
+  div.innerHTML = `<b>${s.name}</b><div class="meta">${s.type}｜${s.note}<br>所要時間：${s.time}｜目安料金：${s.fee}<br><a href="${google}" target="_blank">Googleマップで開く</a></div>`;
+  list.appendChild(div);
+});
+</script>
+</body>
+</html>
